@@ -1,0 +1,25 @@
+<div class="row">
+    <div id="entrant-list" class="col-lg-6">
+        <button value="Roll" onclick="rollIt(<%= listItems.length %>)">Roll!</button>
+        Found the following entrants (<%= listItems.length %>)
+
+            <% listItems.forEach( function(item, index) { %>
+                <div class="row">
+
+                    <span id="index-<%= index+1 %>" class="col-sm-1 index ">
+                        <%= index+1 %>
+                    </span>
+                    <span id="name-<%= index+1 %>" class="col-sm-11 entrant">
+                        <%= item[1] %>
+                    </span>
+                    <!-- <div class="col-sm email"> <%= item[2] %></div> -->
+                </div>
+
+
+                <% }); %>
+    </div>
+
+    <div id="winners-list" class="col-lg-6">
+        List of Winners
+    </div>
+</div>

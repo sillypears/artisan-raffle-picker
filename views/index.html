@@ -1,0 +1,9 @@
+<!-- views/index.html -->
+<form action="list">
+    <select name="filename">
+        <% raffles.forEach(function(raffle) { %>
+        <option value="<%= raffle %>"><%= raffle %></option>
+        <% }); %>
+    </select>
+    <input type="submit" name="raffle" />
+</form>

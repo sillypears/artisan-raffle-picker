@@ -1,0 +1,35 @@
+{
+  "dependencies": {
+    "axios": "^0.21.1",
+    "babel-runtime": "^6.26.0",
+    "dotenv": "^8.2.0",
+    "googleapis": "^66.0.0",
+    "koa": "^2.13.0",
+    "koa-ejs": "^4.3.0",
+    "koa-handlebars": "^2.0.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^10.0.0",
+    "koa-static": "^5.0.0",
+    "koahub-handlebars": "^2.0.9",
+    "node-json-rpc": "^0.0.1",
+    "read-excel-file": "^4.1.0"
+  },
+  "name": "artisan-raffle-picker",
+  "description": "Not everything will be included since everyone runs forms a little different, but will try to include as much as I can think of that will be relevant to the most people.",
+  "version": "0.0.1",
+  "main": "webapp.js",
+  "scripts": {
+    "start": "node ./webapp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sillypears/artisan-raffle-picker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sillypears/artisan-raffle-picker/issues"
+  },
+  "homepage": "https://github.com/sillypears/artisan-raffle-picker#readme"
+}
