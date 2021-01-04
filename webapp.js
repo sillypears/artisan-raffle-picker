@@ -75,6 +75,7 @@ router.get('/', async (ctx, next) => {
 });
 
 router.get('/random/:max/:num?', async (ctx, next) => {
+    // random.org requires a min/max so just return 1 and exit
     if (ctx.params.max == 1) {
         ctx.body = {
             status: "success",
@@ -82,16 +83,18 @@ router.get('/random/:max/:num?', async (ctx, next) => {
         }
         return
     }
+
+    // default to picking 1 number unless specified
+    let n = 1
+    if (ctx.params.num) {
+        n = ctx.params.num
+    }
+
     const options = {
         port: 443,
         host: "api.random.org",
         path: "json-rpc/2/invoke",
         strict: true
-    }
-    let n = 1
-    console.log(`ctx.params.max: ${ctx.params.max}`)
-    if (ctx.params.num) {
-        n = ctx.params.num
     }
 
     const data = JSON.stringify({
