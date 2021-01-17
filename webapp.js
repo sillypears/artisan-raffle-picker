@@ -9,12 +9,7 @@ const Logger = require("koa-logger");
 
 const xlsxFile = require('read-excel-file/node');
 
-const readline = require('readline');
 const { google } = require('googleapis');
-const keyfile = path.join(__dirname, 'creds.json');
-const keys = JSON.parse(fs.readFileSync(keyfile));
-const { authenticate } = require('@google-cloud/local-auth');
-const sheets = google.sheets('v4');
 
 const { env } = require('process');
 const axios = require('axios');
@@ -23,7 +18,6 @@ require('dotenv').config();
 const app = new koa()
 const router = new koaRouter()
 
-const scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const PORT = 8080
 let privatekey = require('./creds.json');
 const { get } = require('http');
@@ -121,7 +115,6 @@ async function getSheet(id) {
 router.get('/', async (ctx, next) => {
     const gdriveFiles = await getSheets()
     const raffleFiles = await print('./raffles/')
-    console.log(gdriveFiles)
     return ctx.render('index', {
         raffles: raffleFiles,
         gdriveFiles: gdriveFiles
@@ -201,14 +194,12 @@ router.get('/random/:max/:num?', async (ctx, next) => {
 router.get('/list', async (ctx, next) => {
     var listedData;
     var headers;
-    console.log(ctx.query)
     if (ctx.query['raffle'] == 'file') {
         listedData = await readExcel(ctx.query.filename)
         headers = listedData.shift()
     } else if (ctx.query['raffle'] == 'gsheet') {
         listedData = await getSheet(ctx.query['filename'])
         headers = listedData.shift()
-        console.log(headers)
     }
     return ctx.render('list', {
         listItems: listedData,
@@ -217,36 +208,9 @@ router.get('/list', async (ctx, next) => {
     });
 });
 
-// router.get('/gsheets', async (ctx, next) => {
-//     // let localAuth = await getAuth()
-//     let apikey = process.env.GOOGLE_API_KEY
-//     let res = await axios.get(`https://spreadsheets.google.com/feeds/spreadsheets/private/full?key=${apikey}`)
-//     console.log(res)
-//     if (res.status == 200) {
-//         ctx.body = {
-//             status: "success",
-//             message: "Authentication successful",
-//             vars: ctx.request.query,
-//             result: JSON.stringify(res.data)
-//         }
-//         return
-//     }
-//     else {
-//         console.log(res.statusCode)
-//     }
-//     ctx.body = {
-//         status: "failure",
-//         message: `Authentication failed ${res.message}`
-//     }
-//     return
-// });
-
-
 app.use(Logger())
     .use(router.routes())
     .use(router.allowedMethods())
     .use(serve('./public'))
-
-
 
 app.listen(PORT, () => console.log(`running on ${PORT}`))
