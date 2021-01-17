@@ -1,9 +1,17 @@
 <!-- views/index.html -->
-<form action="list">
-    <select name="filename">
+<form name='localraffles' id='localraffles' action="list">
+    <select name="filename" id='local'>
         <% raffles.forEach(function(raffle) { %>
         <option value="<%= raffle %>"><%= raffle %></option>
         <% }); %>
     </select>
-    <input type="submit" name="raffle" />
+    <input type="submit" name="raffle" value="file" />
+</form>
+<form name="sheetId"  action="list" method="GET">
+    <select name="filename" id='gdrive'>
+        <% gdriveFiles.forEach(function(raffle) { %>
+            <option value="<%= raffle.id %>"><%= raffle.name %></option>
+        <% }); %>
+    </select>
+    <input type="submit" name="raffle" value="gsheet" />
 </form>

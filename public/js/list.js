@@ -12,14 +12,16 @@ function rollIt(max) {
     req.onload = function () {
         let random = 1
         const data = JSON.parse(this.response)
-        if (data.status == "success" ) {random = data.message[0]}
-        if (pickedNos.indexOf(random) == -1) {
-            pickedNos.push(random)
-            winners += 1;
-            alertOn = `#name-${random}`
-            $('#index-' + random).addClass('highlight')
-            $('#winners-list').append(`<div class="raffle-winner">${winners}. ${$(alertOn).text()}</div>`)
-        } else {console.log(`${random} exists in ${pickedNos}`)}
+        if (data.status == "success") {
+            random = data.message[0]
+            if (pickedNos.indexOf(random) == -1) {
+                pickedNos.push(random)
+                winners += 1;
+                alertOn = `#name-${random}`
+                $('#index-' + random).addClass('highlight')
+                $('#winners-list').append(`<div class="raffle-winner">${winners}. ${$(alertOn).text()}</div>`)
+            } else { console.log(`${random} exists in ${pickedNos}`) }
+        }
     }
     req.send()
 

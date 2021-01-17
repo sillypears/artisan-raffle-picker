@@ -116,6 +116,6 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 credentials.json
+creds.json
 database.sqlite
 *.xlsx
-token.json
