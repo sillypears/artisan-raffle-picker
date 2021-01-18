@@ -6,6 +6,11 @@ Not everything will be included since everyone runs forms a little different, bu
 
 Feel free to fork it and do what you want!
 
+This is how I setup my forms, which the logic follows:
+* Collect Emails, response receipts always and limit to 1 response (this defaults to 1st field)
+* 2nd field is "Paypal email"
+* **3rd field is IG/Discord/etc name that is displayed on the RNG page** *****
+    * Basically this is the column I look for, just add / move your columns so the one you want to display is always showing
 ## Setting it up
 
 So setting this up is kinda shitty because Google Forms/Sheets/Drive doesn't allow you to just find the stuff. So you have to enable some APIs and generate some tokens on your Google account. I will do my best to document all of this but I don't actually remember everything that got it "working"
