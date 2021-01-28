@@ -1,27 +1,35 @@
 'use strict';
+const { env } = require('process');
+require('dotenv').config();
+
 const koa = require('koa')
 const path = require('path')
 const render = require('koa-ejs')
 const koaRouter = require('koa-router')
+var bodyParser = require('koa-body')
 const serve = require('koa-static');
 const fs = require('fs')
 const Logger = require("koa-logger");
 
-const xlsxFile = require('read-excel-file/node');
-
+// For google related stuff
 const { google } = require('googleapis');
-
-const { env } = require('process');
 const axios = require('axios');
-require('dotenv').config();
+
+const DB = require("sqlite3-helper")
+DB({
+    path: './database/database.sqlite',
+    fileMustExist: true,
+    migrate: false
+})
+var models = require('./models/models')
+
 
 const app = new koa()
+app.use(bodyParser())
 const router = new koaRouter()
 
 const PORT = 8080
 let privatekey = require('./creds.json');
-const { get } = require('http');
-
 
 render(app, {
     root: path.join(__dirname, 'views'),
@@ -31,31 +39,13 @@ render(app, {
     // debug: true
 })
 
-async function getAuth() {
-    const auth = await authenticate({
-        keyfilePath: keyfile,
-        scopes: [
-            'https://www.googleapis.com/auth/drive',
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/spreadsheets',
-        ],
-    });
-    return auth
-}
-
-async function print(path) {
-    const files = await fs.promises.readdir(path);
-    return files
-}
-
 async function getJWT() {
     let jwt = new google.auth.JWT(
         privatekey.client_email,
         null,
-        privatekey.private_key,
-        ['https://www.googleapis.com/auth/drive']
+        privatekey.private_key, ['https://www.googleapis.com/auth/drive']
     );
-    jwt.authorize(function (err, tokens) {
+    jwt.authorize(function(err, tokens) {
         if (err) {
             console.log(`Failed to auth: ${err}`)
             return;
@@ -63,12 +53,6 @@ async function getJWT() {
     })
     return jwt
 }
-async function readExcel(filePath) {
-    // console.log(filePath)
-    const path = `./raffles/${filePath}`
-    // console.log(path)
-    return await xlsxFile(`./raffles/${filePath}`)
-};
 
 async function getSheets() {
     let jwtClient = await getJWT()
@@ -80,10 +64,10 @@ async function getSheets() {
             q: "mimeType = 'application/vnd.google-apps.spreadsheet' and (name contains 'Raffle' or name contains 'raffle')"
         }, (err, res) => {
             if (err) {
-                console.log(`Failed to get drive: ${err}`); 
+                console.log(`Failed to get drive: ${err}`);
                 reject(`Error getting files: ${err}`)
                 return;
-            } 
+            }
             files = res.data.files;
             resolve(files)
         })
@@ -95,33 +79,44 @@ async function getSheet(id) {
     var data;
     let sheet = google.sheets('v4')
     return new Promise((resolve, reject) => {
-        const dataA = sheet.spreadsheets.values.get({
+        let title = ''
+        const titleA = sheet.spreadsheets.get({
             auth: jwtClient,
-            spreadsheetId: id,
-            range: 'A:D'
+            spreadsheetId: id
         }, (err, res) => {
-            if (err){
-                console.log(`Failed to get sheet: ${err}`)
-                reject(`Error getting sheet: ${err}`)
+            if (err) {
+                console.log(`Failed to get sheet title: ${err}`)
+                reject(`Failed to get sheet title: ${err}`)
                 return;
             }
-            data = res.data.values
-            resolve(data)
-        
+            title = res.data.properties.title
+            const dataA = sheet.spreadsheets.values.get({
+                auth: jwtClient,
+                spreadsheetId: id,
+                range: 'A:D'
+            }, (err, res) => {
+                if (err) {
+                    console.log(`Failed to get sheet values: ${err}`)
+                    reject(`Error getting sheet values: ${err}`)
+                    return;
+                }
+
+                data = { 'title': title, 'data': res.data.values }
+                data = resolve(data)
+
+            })
         })
     })
 }
 
-router.get('/', async (ctx, next) => {
+router.get('/', async(ctx, next) => {
     const gdriveFiles = await getSheets()
-    const raffleFiles = await print('./raffles/')
     return ctx.render('index', {
-        raffles: raffleFiles,
         gdriveFiles: gdriveFiles
     });
 });
 
-router.get('/random/:max/:num?', async (ctx, next) => {
+router.get('/random/:max/:num?', async(ctx, next) => {
     // random.org requires a min/max so just return 1 and exit
     if (ctx.params.max < 1) {
         ctx.body = {
@@ -174,7 +169,6 @@ router.get('/random/:max/:num?', async (ctx, next) => {
     }
     let res = await axios(config)
     if (res.status === 200) {
-        console.log((res.data))
         ctx.body = {
             status: "success",
             random: Math.round(Math.random() * 100),
@@ -182,7 +176,6 @@ router.get('/random/:max/:num?', async (ctx, next) => {
         }
         return
     } else {
-        console.log((res))
         ctx.body = {
             status: "failure",
             message: []
@@ -191,26 +184,57 @@ router.get('/random/:max/:num?', async (ctx, next) => {
     }
 })
 
-router.get('/list', async (ctx, next) => {
-    var listedData;
-    var headers;
-    if (ctx.query['raffle'] == 'file') {
-        listedData = await readExcel(ctx.query.filename)
-        headers = listedData.shift()
-    } else if (ctx.query['raffle'] == 'gsheet') {
-        listedData = await getSheet(ctx.query['filename'])
-        headers = listedData.shift()
-    }
+router.get('/list', async(ctx, next) => {
+    let listedTitle;
+    let listedData;
+    let headers;
+
+    listedData = await getSheet(ctx.query['filename'])
+    listedTitle = listedData['title']
+    let foundRaffle = await models.getRaffleId(listedTitle, false)
+    console.log(foundRaffle)
+    listedData = listedData['data']
+    headers = listedData.shift()
+
     return ctx.render('list', {
+        listTitle: listedTitle,
         listItems: listedData,
         headerData: headers,
         randomSeed: listedData.length
     });
 });
 
+router.post('/winners', async(ctx, next) => {
+    if (!ctx.request.body.title || !ctx.request.body.data) {
+        ctx.response.status = 400;
+        ctx.body = {
+            status: 'failure',
+            message: "Title/data not found"
+        }
+    } else {
+        console.log(ctx.request.body)
+        let info = await models.saveWinners(ctx.request.body)
+        if (info) {
+            ctx.response.status = 201
+            ctx.body = {
+                status: 'success',
+                message: info
+            }
+        } else {
+            ctx.response.status = 400
+            ctx.body = {
+                status: 'failure',
+                message: 'DB failure'
+            }
+        }
+    }
+    return;
+});
+
 app.use(Logger())
     .use(router.routes())
-    .use(router.allowedMethods())
+
+.use(router.allowedMethods())
     .use(serve('./public'))
 
 app.listen(PORT, () => console.log(`running on ${PORT}`))

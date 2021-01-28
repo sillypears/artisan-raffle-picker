@@ -1,16 +1,19 @@
 <div class="row">
-    <div id="entrant-list" class="col-lg-6">
-        <button value="Roll" onclick="rollIt(<%= listItems.length %>)">Roll!</button>
-        Found the following entrants (<%= listItems.length %>)
+    <div id="entrant-list" class="entrant-list col-lg-8">
+        <button value="Roll" onclick="rollIt(<%= listItems.length %>)">Roll!</button> Found the following entrants (
+        <%= listItems.length %>)
 
             <% listItems.forEach( function(item, index) { %>
                 <div class="row">
 
-                    <span id="index-<%= index+1 %>" class="col-sm-1 index ">
+                    <span id="index-<%= index+1 %>" class="col-sm-1 index">
                         <%= index+1 %>
                     </span>
                     <span id="name-<%= index+1 %>" class="col-sm-11 entrant">
-                        <%= item[3] %> - <%= index %>
+                        <span class="winner-name"><%= item[3] %></span> - <span class="winner-position"><%= index+1 %></span>
+                    <hidden style="display:none;" class="winner-email">
+                        <%=item[1] %>
+                    </hidden>
                     </span>
                 </div>
 
@@ -18,7 +21,12 @@
                 <% }); %>
     </div>
 
-    <div id="winners-list" class="col-lg-6">
-        List of Winners
+    <div id="winners-list" class="winner-list col-lg-4">
+        <button value="saveWinners" onclick="saveWinners()">Save Winners :)</button> List of Winners
     </div>
 </div>
+<hidden style="display:none;" id="raffle-title">
+    <%= listTitle %>
+</hidden>
+<hidden style="display:none;" id="all-winners"></hidden>
+<hidden style="display:none;" id="all-emails"></hidden>

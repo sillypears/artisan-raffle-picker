@@ -117,5 +117,5 @@ dist
 
 credentials.json
 creds.json
-database.sqlite
+database.sqlite*
 *.xlsx
