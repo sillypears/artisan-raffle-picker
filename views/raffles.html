@@ -1,0 +1,17 @@
+<div class="row">
+    <% Object.keys(raffles).forEach( function(raffle) { %>
+        <div class="col-md-auto">
+            <span class="h5"><%= raffle %></span>
+            <div class="row">
+                <% raffles[raffle].forEach(function (winner) { %>
+                    <div class="col-md-auto">
+                        |->
+                        <span class="pre">
+                                <%= winner.username %> | <%= winner.platform %>
+                            </span>
+                    </div>
+                    <% }) %>
+            </div>
+        </div>
+        <% }) %>
+</div>

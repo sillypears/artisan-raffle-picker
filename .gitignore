@@ -119,3 +119,4 @@ credentials.json
 creds.json
 database.sqlite*
 *.xlsx
+database/init/first_raffle_data.sql

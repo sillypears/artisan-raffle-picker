@@ -10,12 +10,13 @@ var bodyParser = require('koa-body')
 const serve = require('koa-static');
 const fs = require('fs')
 const Logger = require("koa-logger");
+const favicon = require("koa-favicon")
 
 // For google related stuff
 const { google } = require('googleapis');
 const axios = require('axios');
 
-const DB = require("sqlite3-helper")
+var DB = require("better-sqlite3-helper")
 DB({
     path: './database/database.sqlite',
     fileMustExist: true,
@@ -26,6 +27,7 @@ var models = require('./models/models')
 
 const app = new koa()
 app.use(bodyParser())
+app.use(favicon(__dirname + '/public/favicon.ico'));
 const router = new koaRouter()
 
 const PORT = 8080
@@ -56,7 +58,6 @@ async function getJWT() {
 
 async function getSheets() {
     let jwtClient = await getJWT()
-    var files;
     let drive = google.drive('v3');
     return new Promise((resolve, reject) => {
         const filesA = drive.files.list({
@@ -68,8 +69,7 @@ async function getSheets() {
                 reject(`Error getting files: ${err}`)
                 return;
             }
-            files = res.data.files;
-            resolve(files)
+            resolve(res.data.files)
         })
     })
 }
@@ -112,6 +112,7 @@ async function getSheet(id) {
 router.get('/', async(ctx, next) => {
     const gdriveFiles = await getSheets()
     return ctx.render('index', {
+        title: "Artisan Raffle Winner Picker!",
         gdriveFiles: gdriveFiles
     });
 });
@@ -188,23 +189,38 @@ router.get('/list', async(ctx, next) => {
     let listedTitle;
     let listedData;
     let headers;
-
+    let winners = [];
     listedData = await getSheet(ctx.query['filename'])
     listedTitle = listedData['title']
     let foundRaffle = await models.getRaffleId(listedTitle, false)
-    console.log(foundRaffle)
+    let foundRolls = await models.getRollsForRaffle(foundRaffle)
     listedData = listedData['data']
     headers = listedData.shift()
-
-    return ctx.render('list', {
-        listTitle: listedTitle,
-        listItems: listedData,
-        headerData: headers,
-        randomSeed: listedData.length
-    });
+    if (foundRaffle > 0 && foundRolls > 0) {
+        winners = await models.getRaffleFromDB(foundRaffle)
+        return ctx.render('relist', {
+            title: `Listing Raffle`,
+            listTitle: listedTitle,
+            listItems: listedData,
+            gsheetId: ctx.query['filename'],
+            winners: winners,
+            headerData: headers,
+            randomSeed: listedData.length
+        });
+    } else {
+        return ctx.render('list', {
+            title: `Listing Raffle`,
+            listTitle: listedTitle,
+            listItems: listedData,
+            gsheetId: ctx.query['filename'],
+            winners: winners,
+            headerData: headers,
+            randomSeed: listedData.length
+        });
+    }
 });
 
-router.post('/winners', async(ctx, next) => {
+router.post('/savewinners', async(ctx, next) => {
     if (!ctx.request.body.title || !ctx.request.body.data) {
         ctx.response.status = 400;
         ctx.body = {
@@ -230,6 +246,34 @@ router.post('/winners', async(ctx, next) => {
     }
     return;
 });
+
+router.get('/raffles', async(ctx, next) => {
+    let raffles = await models.getRaffleWinners()
+    return ctx.render('raffles', {
+        title: 'Raffles',
+        raffles: raffles
+    })
+})
+router.get('/remove', async(ctx, next) => {
+    console.log(ctx.query.raffleId)
+    if (ctx.query.raffleId) {
+        console.log(await models.removeRaffle(ctx.query.raffleId))
+    }
+    let raffles = await models.getExistingRaffles()
+
+    return ctx.render('remove', {
+        title: "Delete Raffle?",
+        raffles: raffles
+    })
+})
+
+router.get('/denylist', async(ctx, next) => {
+    let denylist = await models.getDenyListUsers()
+    return ctx.render('deny', {
+        title: "Naughty People",
+        denied: denylist
+    })
+})
 
 app.use(Logger())
     .use(router.routes())

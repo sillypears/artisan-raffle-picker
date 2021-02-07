@@ -1,6 +1,22 @@
 $(function() {
 
-    console.log("loaded")
+    console.log("Oh shit a raffle")
+
+
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
 });
 
 var winners = 0;
@@ -39,15 +55,17 @@ function saveWinners() {
     }
     let winners = $('#all-winners').text().slice(0, -1).split(';')
     let emails = $('#all-emails').text().slice(0, -1).split(';')
+    let gsheetId = $('#gsheet-id').text().trim();
     let data = {
         title: $('#raffle-title').text().trim(),
         data: {
             winners: winners,
-            emails: emails
+            emails: emails,
+            gsheetId: gsheetId
         }
     }
     var req = new XMLHttpRequest()
-    req.open('POST', `/winners`, true);
+    req.open('POST', `/savewinners`, true);
     req.setRequestHeader('Content-Type', 'application/json')
     req.send(JSON.stringify(data))
 }

@@ -1,0 +1,12 @@
+<div>
+    <form action="/remove">
+        <select id='raffleId' name='raffleId'>
+    <% raffles.forEach( function(raffle) { %>
+        <option id="raffle-id-<%= raffle.id %>" value="<%= raffle.id %>">
+            <%= raffle.title %>
+        </option>
+        <% }) %>
+    </select>
+        <button type="submit">BYE BYE</button>
+    </form>
+</div>

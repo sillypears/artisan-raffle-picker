@@ -47,6 +47,5 @@ So setting this up is kinda shitty because Google Forms/Sheets/Drive doesn't all
     1. Install NodeJS >= 15.3
     1. From CLI type `npm install --save` to install all packages required.
     1. Run `node webapp.js` to start and navigate to http://localhost:8080 (unless you've changed the port)
-1. If everything is setup correctly and you have sheets in the `Forms` folder with `raffle` or `Raffle` in the name, you should see entries in the list
 1. Once a form is selected, click the `Roll!` button to pick your winners
 1. THIS SHOULD BE EVERYTHING BUT WHO THE FUCK KNOWS

@@ -1,12 +1,7 @@
-<div>
-    <div class="h5() title">for:
-        <%=listTitle%>
-    </div>
-</div>
 <div class="row">
-    <div id="entrant-list" class="entrant-list col-md-8">
-        <button value="Roll" onclick="rollIt(<%= listItems.length %>)">Roll!</button> <span class="collapsible">Found the following entrants ( <%= listItems.length %> )</span>
-        <div class="col-content">
+    <div id="entrant-list" class="entrant-list col-lg-8">
+        <button value="Roll" onclick="rollIt(<%= listItems.length %>)">Roll!</button> Found the following entrants from previous raffle (
+        <%= listItems.length %>)
             <% listItems.forEach( function(item, index) { %>
                 <div class="row">
                     <span id="index-<%= index+1 %>" class="col-sm-1 index">
@@ -22,9 +17,9 @@
 
 
                 <% }); %>
-        </div>
     </div>
-    <div id="winners-list" class="winner-list col-md-4">
+
+    <div id="winners-list" class="winner-list col-lg-4">
         <button value="saveWinners" onclick="saveWinners()">Save Winners :)</button> List of Winners
         <% winners.forEach( function(item, index) { %>
             <div>

@@ -1,0 +1,9 @@
+<div class="row">
+    <% denied.forEach(function(user) { %>
+        <div id="banned-<%= user.id %>" class="col-md-auto" title="<%= user.reason %>">
+            <span class="border-bottom banned-username" id="banned-username-<%= user.id %>"><%= user.username %></span>
+            <span class="border-bottom banned-on" id="banned-on-<%=user.id%>"><%=user.date%></span>
+            <button class="btn-small btn-primary" title="unban" onclick="undeny(<%= user.id %>)">Unban!</button>
+        </div>
+        <% }) %>
+</div>
