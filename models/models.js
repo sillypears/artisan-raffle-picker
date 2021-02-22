@@ -83,8 +83,8 @@ async function removeRaffle(raffleId) {
 }
 
 async function getRollsForRaffle(raffleId) {
-    const row = await DB().query('SELECT count(r.id) FROM rolls r WHERE r.raffleId = ?', raffleId)
-    return row
+    const row = await DB().query('SELECT count(r.id) as count FROM rolls r WHERE r.raffleId = ?', raffleId)
+    return row[0]['count']
 }
 async function getDenyListUsers() {
 
@@ -92,6 +92,10 @@ async function getDenyListUsers() {
     return row
 }
 
+async function getRaffleWinner(raffleId) {
+    let rows = await DB().query("SELECT u.username, u.platform FROM rolls r LEFT JOIN users u ON u.id = r.userId")
+    return rows
+}
 async function getRaffleWinners() {
     let raffleNames = await DB().query("SELECT DISTINCT(r.title) FROM rolls ro LEFT JOIN raffles r ON ro.raffleId = r.id")
     let raffles = {}
@@ -108,10 +112,12 @@ async function getRaffleWinners() {
 module.exports = {
     saveWinners,
     getRaffleId,
+    getUserId,
     getRaffleFromDB,
     getExistingRaffles,
     removeRaffle,
     getDenyListUsers,
     getRollsForRaffle,
+    getRaffleWinner,
     getRaffleWinners
 }
