@@ -1,1 +1,11 @@
 RANDOM_ORG_API =
+CREDS_type = 
+CREDS_project_id = 
+CREDS_private_key_id = 
+CREDS_private_key = 
+CREDS_client_email = 
+CREDS_client_id = 
+CREDS_auth_uri = 
+CREDS_token_uri = 
+CREDS_auth_provider_x509_cert_url = 
+CREDS_client_x509_cert_url = 
