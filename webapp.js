@@ -30,7 +30,7 @@ app.use(bodyParser())
 app.use(favicon(__dirname + '/public/favicon.ico'));
 const router = new koaRouter()
 
-const PORT = 8080
+const PORT = process.env.PORT || 8080;
 let privatekey = {
     "type": process.env.CREDS_type,
     "project_id": process.env.CREDS_project_id,
