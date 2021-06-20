@@ -198,36 +198,37 @@ router.get('/random/:max/:num?', async(ctx, next) => {
 router.get('/list', async(ctx, next) => {
     let listedTitle;
     let listedData;
+    let raffleId = -3
     let headers;
     let winners = [];
     listedData = await getSheet(ctx.query['filename'])
     listedTitle = listedData['title']
-    let foundRaffle = await models.getRaffleId(listedTitle, false)
-    let foundRolls = await models.getRollsForRaffle(foundRaffle)
+    raffleId = await models.getRaffleId(listedTitle, ctx.query['filename'], false)
+    let foundRolls = await models.getRollsForRaffle(raffleId)
     listedData = listedData['data']
     headers = listedData.shift()
-    if (foundRaffle > 0 && foundRolls > 0) {
-        winners = await models.getRaffleFromDB(foundRaffle)
-        return ctx.render('relist', {
-            title: `Listing Raffle`,
-            listTitle: listedTitle,
-            listItems: listedData,
-            gsheetId: ctx.query['filename'],
-            winners: winners,
-            headerData: headers,
-            randomSeed: listedData.length
-        });
+    if (raffleId > 0 && foundRolls > 0) {
+        winners = await models.getRaffleFromDB(raffleId)
+    } else if (raffleId > 0) {
+        let users = await models.getUsers(raffleId)
+        if (users < 1) {
+            users = models.createUsers(listedData)
+        }
+
     } else {
-        return ctx.render('list', {
-            title: `Listing Raffle`,
-            listTitle: listedTitle,
-            listItems: listedData,
-            gsheetId: ctx.query['filename'],
-            winners: winners,
-            headerData: headers,
-            randomSeed: listedData.length
-        });
+        raffleId = await models.getRaffleId(listedTitle, ctx.query['filename'], true)
+
     }
+    return ctx.render('list', {
+        title: `Listing Raffle`,
+        listTitle: listedTitle,
+        listItems: listedData,
+        gsheetId: ctx.query['filename'],
+        raffleId: raffleId,
+        winners: winners,
+        headerData: headers,
+        randomSeed: listedData.length
+    });
 });
 
 router.post('/savewinners', async(ctx, next) => {
@@ -238,7 +239,6 @@ router.post('/savewinners', async(ctx, next) => {
             message: "Title/data not found"
         }
     } else {
-        console.log(ctx.request.body)
         let info = await models.saveWinners(ctx.request.body)
         if (info) {
             ctx.response.status = 201
@@ -264,8 +264,32 @@ router.get('/raffles', async(ctx, next) => {
         raffles: raffles
     })
 })
-router.get('/remove', async(ctx, next) => {
+
+
+
+router.get('/removeraffle', async(ctx, next) => {
     console.log(ctx.query.raffleId)
+    if (ctx.query.raffleId) {
+        console.log(await models.removeRaffle(ctx.query.raffleId))
+    }
+    let raffles = await models.getExistingRaffles()
+
+    return ctx.render('removeraffle', {
+        title: "Delete Raffle?",
+        raffles: raffles
+    })
+})
+
+
+router.get('/entrants', async(ctx, next) => {
+    let users = await models.getUsers()
+    return ctx.render('entrants', {
+        title: "Entrants",
+        users: users
+    })
+})
+
+router.get('/unbaneuser', async(ctx, next) => {
     if (ctx.query.raffleId) {
         console.log(await models.removeRaffle(ctx.query.raffleId))
     }
@@ -276,7 +300,6 @@ router.get('/remove', async(ctx, next) => {
         raffles: raffles
     })
 })
-
 router.get('/denylist', async(ctx, next) => {
     let denylist = await models.getDenyListUsers()
     return ctx.render('deny', {

@@ -3,8 +3,8 @@ require('arraync')
 
 async function getRaffleId(title, gsheetId, create) {
     let row = await DB().queryFirstRow('SELECT id FROM raffles WHERE title=?', title);
-    if (!create) { return row ? row.id : -1 }
-    return row ? row.id : createRaffleId(title, gsheetId)
+    if (create) { return row ? row.id : createRaffleId(title, gsheetId) }
+    return row ? row.id : -1
 }
 
 async function createRaffleId(title, gsheetId) {
@@ -41,9 +41,7 @@ async function addRolls(winnerId, raffleId) {
 }
 
 async function getRaffleFromDB(raffleId) {
-    console.log(raffleId)
     let rowGsheet = await DB().queryFirstRow('SELECT gsheetId FROM raffles WHERE id=?', raffleId)
-    console.log(rowGsheet)
     if (!rowGsheet) {
         return { raffleId: -1, winners: [] }
     }
@@ -76,7 +74,6 @@ async function getExistingRaffles() {
 }
 
 async function removeRaffle(raffleId) {
-    console.log(raffleId)
     let rowRoll = await DB().delete('rolls', { raffleId: raffleId })
     let rowRaffle = await DB().delete('raffles', { id: raffleId })
     console.log(`${rowRoll} ${rowRaffle}`)
@@ -108,7 +105,10 @@ async function getRaffleWinners() {
     })
     return raffles
 }
-
+async function getUsers() {
+    let users = await DB().query("SELECT u.id, u.username, u.platform, count(r.id) as wins FROM users u LEFT JOIN rolls r ON r.userId = u.id")
+    return users
+}
 module.exports = {
     saveWinners,
     getRaffleId,
@@ -119,5 +119,6 @@ module.exports = {
     getDenyListUsers,
     getRollsForRaffle,
     getRaffleWinner,
-    getRaffleWinners
+    getRaffleWinners,
+    getUsers
 }

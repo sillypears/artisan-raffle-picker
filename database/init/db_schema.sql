@@ -34,6 +34,19 @@ CREATE TABLE raffles (
     gsheetId VARCHAR (200) UNIQUE
 );
 
+-- Table: entrants
+DROP TABLE IF EXISTS entrants;
+
+CREATE TABLE entrants (
+    id       INTEGER PRIMARY KEY ASC ON CONFLICT FAIL AUTOINCREMENT
+                     UNIQUE ON CONFLICT FAIL
+                     NOT NULL ON CONFLICT FAIL,
+    userId   INTEGER REFERENCES users (id) 
+                     NOT NULL ON CONFLICT FAIL,
+    raffleId INTEGER REFERENCES raffles (id) 
+                     NOT NULL ON CONFLICT FAIL
+);
+
 
 -- Table: rolls
 DROP TABLE IF EXISTS rolls;
@@ -83,6 +96,12 @@ CREATE INDEX raffleId ON raffles (
     id
 );
 
+-- Index: entrantsId
+DROP INDEX IF EXISTS entrantsId;
+
+CREATE INDEX entrantsId ON entrants (
+    id ASC
+);
 
 -- Index: rollId
 DROP INDEX IF EXISTS rollId;
@@ -112,6 +131,7 @@ CREATE VIEW raffle_winners AS
            LEFT JOIN
            users u ON ro.userId = u.id
      GROUP BY title;
+
 
 
 COMMIT TRANSACTION;

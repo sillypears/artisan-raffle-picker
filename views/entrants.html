@@ -1,0 +1,7 @@
+<div class="row">
+    <% users.forEach(function(user) { %>
+        <div id="user-<%= user.id %>" class="col-md-auto" title="<%= user.username %>">
+            <span class="border-bottom username" id="username-<%= user.id %>"><%= user.username %></span>
+        </div>
+        <% }) %>
+</div>

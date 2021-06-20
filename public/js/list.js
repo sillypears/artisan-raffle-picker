@@ -33,6 +33,7 @@ function rollIt(max) {
         if (data.status == "success") {
             random = data.message[0]
             if (pickedNos.indexOf(random) == -1) {
+                console.log(`random # ${random} out of ${max}`)
                 pickedNos.push(random)
                 winners += 1;
                 alertOn = `#name-${random}`
